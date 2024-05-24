@@ -1,0 +1,31 @@
+FROM us-docker.pkg.dev/vertex-ai/training/tf-cpu.2-13.py310:latest
+
+WORKDIR /
+
+RUN python -m ensurepip --upgrade
+
+RUN pip install fsspec gcsfs
+
+COPY data_and_model_scripts/train.py .
+
+ARG PROJECT
+ARG TRAIN_DATA_BUCKET_NAME
+ARG VALID_DATA_BUCKET_NAME
+ARG MODEL_BUCKET_NAME
+
+ENV train_data_bucket="gs://$PROJECT-$TRAIN_DATA_BUCKET_NAME"
+ENV valid_data_bucket="gs://$PROJECT-$VALID_DATA_BUCKET_NAME"
+ENV model_bucket="gs://$PROJECT-$MODEL_BUCKET_NAME"
+ENV epochs=10
+ENV batch_size=32
+ENV loss_function="mse"
+ENV learning_rate=0.001
+
+ENTRYPOINT python train.py \
+--train_data_bucket $train_data_bucket \
+--valid_data_bucket $valid_data_bucket \
+--model_bucket $model_bucket \
+--epochs $epochs \
+--batch_size $batch_size \
+--loss_function $loss_function \
+--learning_rate $learning_rate

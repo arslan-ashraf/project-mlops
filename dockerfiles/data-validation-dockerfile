@@ -1,0 +1,17 @@
+FROM python:3.11.9-slim-bookworm
+
+WORKDIR /
+
+RUN python -m ensurepip --upgrade
+
+RUN pip install pandas numpy fsspec gcsfs
+
+COPY data_and_model_scripts/data_validation.py .
+
+ARG PROJECT
+ARG DATA_BUCKET_NAME
+
+ENV data_bucket_uri="gs://$PROJECT-$DATA_BUCKET_NAME"
+
+ENTRYPOINT python data_validation.py \
+--data_bucket_uri $data_bucket_uri 

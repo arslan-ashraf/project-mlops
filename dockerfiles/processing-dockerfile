@@ -1,0 +1,22 @@
+FROM python:3.11.9-slim-bookworm
+
+WORKDIR /
+
+RUN python -m ensurepip --upgrade
+
+RUN pip install pandas numpy fsspec gcsfs
+
+COPY data_and_model_scripts/data_processing.py .
+
+ARG PROJECT
+ARG DATA_BUCKET_NAME
+ARG PROCESSED_DATA_SAVE_BUCKET_NAME
+
+ENV data_bucket_uri="gs://$PROJECT-$DATA_BUCKET_NAME"
+ENV processed_data_save_bucket="gs://$PROJECT-$PROCESSED_DATA_SAVE_BUCKET_NAME"
+ENV fraction_for_valid_and_test_data=0.2
+
+ENTRYPOINT python data_processing.py \
+--data_bucket_uri $data_bucket_uri \
+--processed_data_save_bucket $processed_data_save_bucket \
+--fraction_for_valid_and_test_data $fraction_for_valid_and_test_data
